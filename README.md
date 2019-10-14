@@ -78,9 +78,9 @@ USAGE
 
 1. Upload Log Files:
 
-Download the Nginx access Log Files from your web server and unzip (or uncomment the unzip function in LogViz/app.py)
+Use the testing logs found in the test-logs directory, or Download Nginx access Log Files from your web server and unzip the files.
 
-2. Upload multiple files to uploader at http://127.0.0.1:5000
+2. Upload multiple nginx log files to uploader at http://127.0.0.1:5000
 
 8. click 'GENERATE MAP' and you will be routed to your maps
 
