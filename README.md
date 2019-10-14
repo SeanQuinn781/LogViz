@@ -16,9 +16,9 @@ View the geolocation, status code, operating system and full request of IP addre
 
 ## Installation
 
-# Docker
+LogViz can be installed and ran a few different ways, using docker, using docker-compose, or by running the flask app with Python
 
-or in docker:
+# Docker Installation
 
 from root of github repo:
 
@@ -31,12 +31,12 @@ run the container
 docker run -p 5000:80 -t logviz_service
 ```
 
-# Docker-compose
+# Docker-compose installation
 ```
 docker-compose up
 ```
 
-# Python3
+# Python3 installation
 
 1. Install python3 venv
 
