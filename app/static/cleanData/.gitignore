@@ -1,0 +1,7 @@
+ip.txt
+noDuplicatesLog.txt
+loglist.js
+# Ignore everything in this directory
+*
+# Except this file
+

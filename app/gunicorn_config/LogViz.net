@@ -1,0 +1,10 @@
+server {
+    listen 80;
+    server_name logviz.net;
+
+    location / {
+	include proxy_params;
+        proxy_pass http://unix:/var/www/html/LogViz/LogViz.sock;
+    }
+}
+

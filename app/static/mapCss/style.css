@@ -1,0 +1,262 @@
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+body,
+html {
+  font-family: 'Exo', sans-serif;
+}
+
+.closeTooltipButton {
+  z-index: 999;
+  color: red;
+  font-weight: bold;
+  border-radius: 1px;
+  border: 1px solid #363030;
+}
+/* Tooltip container */
+
+.tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  margin-top: 21px;
+  border-bottom: 1px dotted black;
+}
+
+.map-nav-btn.active {
+  background-color: rgb(10, 201, 59);
+  color: #ffecec;
+  font-weight: bold;
+}
+
+.tooltip .toolTipText,
+.tooltip .toolTipText .abuseIpDblink,
+.tooltip .tooltiptext {
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  width: 140px;
+  white-space: pre-wrap;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip>span>a {
+  padding-bottom: 5px;
+  color: #4bae4b;
+}
+
+.tooltip .toolTipText .abuseIpDbLink {
+  padding-bottom: 5px;
+}
+
+.toolTipText>button {
+  height: 27px;
+  width: 140px;
+  overflow: hidden;
+  font-size: 17px;
+  text-transform: uppercase;
+  -webkit-transition: width .6s;
+  transition: width .6s;
+  margin-top: 3px;
+  margin-bottom: -6px;
+  box-shadow: 1px 1px 1px #bda7a7;
+}
+
+.toolTipText>button:hover {
+  margin-bottom: -8px;
+  margin-right: -7px;
+  height: auto;
+  width: 482px;
+  overflow: visible;
+  font-size: 17px;
+  text-transform: uppercase;
+  box-shadow: 1px 1px 1px lightgreen;
+}
+
+
+.tooltip.active .toolTipText {
+  visibility: visible;
+  position: absolute;
+  font-weight: bold;
+  padding: 6px;
+  padding-left: 6px;
+  text-align: center;
+  padding-left: 11px;
+  width: 128px;
+  /*offset for hidden full request */
+}
+
+body {
+  margin: 0;
+}
+
+div#map-navigation {
+  position: fixed;
+  flex-direction: column;
+  display: flex;
+  right: 20px;
+  top: 20px;
+}
+
+div.container, #root, #root #LogViz, #root #LogViz div .svgMap {
+  height: 100vh;
+  width: 100vw;
+  /*background-color: #505050;
+   background-color: darkblue; */
+  background-color: #191859;
+  margin: 0;
+}
+
+.segment {
+  /*
+    fill: #0f5f3d;
+  stroke: #3bff0a;
+  */
+  fill: rgb(20, 143, 21);
+  stroke: rgb(92, 255, 51);
+  stroke-width: 1px;
+  opacity: 0.9;
+}
+
+.graticule {
+  opacity: 0.4;
+  stroke: rgb(60, 255, 0);
+  fill: rgb(60, 255, 0);
+}
+
+.marker {
+  fill: blue;
+  stroke: blue;
+}
+
+.request-2 {
+  opacity: 1;
+  stroke: darkgreen;
+  fill: rgb(60, 255, 0);
+}
+
+.request-3 {
+  opacity: 1;
+  fill: rgba(255, 240, 1);
+  stroke: #eefc09;
+}
+
+.request-4 {
+  fill: #f00;
+  stroke: darkred;
+  opacity: 1;
+}
+
+.request-5 {
+  fill: #8b0000;
+  stroke: #8b0000;
+}
+
+.active {
+  background-color: #000;
+  color: #fff;
+}
+
+div .map-nav-btn {
+  cursor: pointer;
+}
+
+#colorCodes {
+  width: 50px;
+  font-size: 14px;
+  position: fixed;
+  margin-top: 100px;
+  top: 20px;
+  left: 17px;
+  text-align: center;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.logoWrap {
+  height: 71px;
+  width: 120px;
+  opacity: .9;
+  position: fixed;
+  top: 0;
+  padding-left: 10px;
+}
+
+.logoWrap h3 {
+  padding-left: 16px;
+  padding-top: 0;
+  margin-top: 0;
+  font-family: 'Orbitron', sans-serif;
+  padding-left: 7px;
+  padding-top: 2px;
+  font-size: 17px;
+}
+
+.logVizLogo {
+  height: 38px;
+  margin-top: 10px;
+  padding-left: 10px;
+  filter: drop-shadow(0px 2px 2px rgba(200, 247, 197, 1));
+  -webkit-filter: drop-shadow(0px 2px 2px rgba(200, 247, 197, 1));
+  -o-filter: drop-shadow(0px 2px 2px rgba(200, 247, 197, 1));
+}
+
+.logVizButton {
+  color: #fff;
+  background-color: #d9534f;
+  border-color: #d43f3a;
+  display: inline-block;
+  padding: 6px 10px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-radius: 4px;
+  margin-top: -5px;
+}
+
+#clue {
+  position: fixed;
+  bottom: -20px;
+  color: #fff;
+  left: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+.graticle {
+  stroke: rgb(40, 255, 8);
+}
+
+#colorCodes svg {
+  width: 25px;
+  padding-left: 2px;
+  padding-top: 6.6px;
+}

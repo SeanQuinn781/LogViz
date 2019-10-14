@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve logviz
+After=network.target
+
+[Service]
+User=exampleUser
+Group=www-data
+WorkingDirectory=/var/www/html/LogViz
+Environment="PATH=/var/www/html/LogViz/bin"
+ExecStart=/var/www/html/LogViz/LogViz/bin/gunicorn --workers 3 --bind unix:LogViz.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+

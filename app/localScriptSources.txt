@@ -1,0 +1,27 @@
+src of scripts for offline testing
+
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+
+<script src="static/localScripts/lodash.min.js"></script>
+
+<script src="static/localScripts/jquery-3.4.1.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+
+https://d3js.org/topojson.v1.min.js 
+
+https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js 
+
+https://d3js.org/d3.v5.min.js 
+
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+
+
