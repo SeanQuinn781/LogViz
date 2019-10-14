@@ -10,7 +10,7 @@ View the geolocation, status code, operating system and full request of IP addre
 
 - Frontend: React for UI, d3 for generating svg maps
 
-- There is a separate repo for running LogViz in seperate flask containers: https://www.github.com/seanquinn781/LogViz-Docker
+- There is a separate repo for running LogViz in seperate flask containers, one for the uploading service and one for the map generation service: https://www.github.com/seanquinn781/LogViz-Docker
 
 ![](logviz.gif)
 
