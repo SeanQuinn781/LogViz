@@ -16,7 +16,7 @@ View the geolocation, status code, operating system and full request of IP addre
 
 ## Installation
 
-LogViz can be installed and ran a few different ways, using docker, using docker-compose,by running the flask app with Python, or with gunicorn as a systemd service (see gunicorn_config)
+LogViz can be installed and ran a few different ways, using docker, using docker-compose, by running the flask app with Python, or with gunicorn as a systemd service (see gunicorn_config for instructions)
 
 # Docker Installation
 
