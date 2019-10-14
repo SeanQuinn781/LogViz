@@ -76,9 +76,7 @@ Go to http://127.0.0.1:5000
 USAGE
 ==========================
 
-1. Upload Log Files:
-
-Use the testing logs found in the test-logs directory, or Download Nginx access Log Files from your web server and unzip the files.
+1. Upload Log Files: Use the testing logs found in the test-logs directory, or Download Nginx access Log Files from your web server and unzip the files.
 
 2. Upload multiple nginx log files to uploader at http://127.0.0.1:5000
 
@@ -88,7 +86,5 @@ Use the testing logs found in the test-logs directory, or Download Nginx access 
 
 5. To switch to a different log file / map use the "Log Buttons" on the right side of the Map UI
 
-## Gunicorn/ Systemd service
-
-See documentation and scripts in /app/gunicorn_config
+To optionally deploy as a Gunicorn/ Systemd service See documentation and scripts in /app/gunicorn_config
 
