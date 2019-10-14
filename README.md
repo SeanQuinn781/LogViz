@@ -82,10 +82,11 @@ Use the testing logs found in the test-logs directory, or Download Nginx access 
 
 2. Upload multiple nginx log files to uploader at http://127.0.0.1:5000
 
-8. click 'GENERATE MAP' and you will be routed to your maps
+3. click 'GENERATE MAP' and you will be routed to your maps
 
-9. For more information about users OS, IP, request type etc, hover over datapoints on the SVG map
+4. For more information about users OS, IP, request type etc, hover over datapoints on the SVG map
 
+5. To switch to a different log file / map use the "Log Buttons" on the right side of the Map UI
 
 ## Gunicorn/ Systemd service
 
