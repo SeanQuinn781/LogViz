@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <!-- TODO: use template -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Log Viz</title>
@@ -21,9 +22,9 @@
   <script type="text/babel">
     import React, { Component } from 'react';
     ReactDOM.render(
-      <App 
-        mapContainer={ 
-        document.querySelector('div.container') 
+      <App
+        mapContainer={
+        document.querySelector('div.container')
       }/>,
       document.getElementById('root')
     );
@@ -56,12 +57,6 @@
   <script src="static/localScripts/d3.v5.min.js"></script>
   <script src="static/localScripts/topojson.v1.min.js"></script>
   <script src="static/localScripts/worlddata.js"></script>
-  <!-- React: to use the cdn instead of local scripts comment out the local react scripts below and uncomment the following cdn scripts: -->
-  <!-- 
-  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script> 
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-  -->
   <!-- local react dev scripts -->
   <script src="static/build/react.development.js"></script>
   <script src="static/build/react-dom.development.js"></script>
