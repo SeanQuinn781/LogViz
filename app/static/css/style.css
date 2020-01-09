@@ -150,3 +150,14 @@ p.name a {
 p.directions {
   color:#fff;
 }
+
+.blockedIpStyle {
+  margin-top: 52px;
+  text-align: center;
+
+}
+
+.blockedIpStyle p {
+  font-size: 20px;
+  color:#000;
+}

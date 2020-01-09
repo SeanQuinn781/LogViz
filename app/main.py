@@ -377,6 +377,7 @@ def logViz():
 
         print("maps have been generated")
     # redirect user to the maps generated from logs
+    # TODO: use templates
     return send_file("static/map.html")
 
 
@@ -416,8 +417,9 @@ def callHost(ip):
         return str(e)
 
     if response.status_code == 200:
-        return response.content
-
+        message = 'Successfully executed ' + data
+        flash(data)
+        return render_template("blockedIp.html", message=message)
 
 if __name__ == "__main__":
     app.debug = True
