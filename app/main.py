@@ -13,6 +13,7 @@ import json
 from geolite2 import geolite2
 import itertools
 import re
+import requests
 from ip6Regex import ip6Regex
 from os.path import join, dirname, realpath
 from getStatusCode import getStatusCode
