@@ -3,8 +3,16 @@
 # for file upload module
 import os
 import json as simplejson
-from flask import Flask, flash, request, render_template, \
-    redirect, url_for, send_from_directory, send_file
+from flask import (
+    Flask,
+    flash,
+    request,
+    render_template,
+    redirect,
+    url_for,
+    send_from_directory,
+    send_file,
+)
 from flask_bootstrap import Bootstrap
 from werkzeug import secure_filename
 from lib.upload_file import uploadfile
@@ -20,22 +28,23 @@ from getStatusCode import getStatusCode
 from allowedFile import allowedFileExtension, allowedFileType
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hh_jxcdsfdsfcodf98)fxec]|'
-app.config['UPLOAD_DIR'] = 'static/data/'
-app.config['ASSET_DIR'] = 'static/mapAssets/'
-app.config['CLEAN_DIR'] = 'static/cleanData/'
-app.config['HTML_DIR'] = 'static/'
+app.config["SECRET_KEY"] = "hh_jxcdsfdsfcodf98)fxec]|"
+app.config["UPLOAD_DIR"] = "static/data/"
+app.config["ASSET_DIR"] = "static/mapAssets/"
+app.config["CLEAN_DIR"] = "static/cleanData/"
+app.config["HTML_DIR"] = "static/"
 
 # app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-IGNORED_FILES = set(['.gitignore'])
+IGNORED_FILES = set([".gitignore"])
 bootstrap = Bootstrap(app)
 
-@app.route("/upload", methods=['GET', 'POST'])
+
+@app.route("/upload", methods=["GET", "POST"])
 def upload():
-    if request.method == 'POST':
-        files = request.files['file']
-        print('IN UPLOAD')
+    if request.method == "POST":
+        files = request.files["file"]
+        print("IN UPLOAD")
         if files:
             filename = secure_filename(files.filename)
             mime_type = files.content_type
@@ -43,12 +52,16 @@ def upload():
             # if file extension is not log or a number (example: access.log.2)
             # or if file type,
             if not allowedFileExtension(files.filename) or validFileType == False:
-                print('not a valid log file type')
-                result = uploadfile(name=filename, type=mime_type, size=0,
-                                    not_allowed_msg="File type not allowed in app.py validation")
+                print("not a valid log file type")
+                result = uploadfile(
+                    name=filename,
+                    type=mime_type,
+                    size=0,
+                    not_allowed_msg="File type not allowed in app.py validation",
+                )
 
             else:
-                uploaded_file_path = os.path.join(app.config['UPLOAD_DIR'], filename)
+                uploaded_file_path = os.path.join(app.config["UPLOAD_DIR"], filename)
                 files.save(uploaded_file_path)
                 size = os.path.getsize(uploaded_file_path)
                 result = uploadfile(name=filename, type=mime_type, size=size)
@@ -56,39 +69,48 @@ def upload():
             return simplejson.dumps({"files": [result.get_file()]})
 
     # get all logs in ./data directory
-    if request.method == 'GET':
-        files = [f for f in os.listdir(app.config['UPLOAD_DIR']) if
-                 os.path.isfile(os.path.join(app.config['UPLOAD_DIR'], f)) and f not in IGNORED_FILES]
+    if request.method == "GET":
+        files = [
+            f
+            for f in os.listdir(app.config["UPLOAD_DIR"])
+            if os.path.isfile(os.path.join(app.config["UPLOAD_DIR"], f))
+            and f not in IGNORED_FILES
+        ]
 
         file_display = []
 
         for f in files:
-            size = os.path.getsize(os.path.join(app.config['UPLOAD_DIR'], f))
+            size = os.path.getsize(os.path.join(app.config["UPLOAD_DIR"], f))
             file_saved = uploadfile(name=f, size=size)
             file_display.append(file_saved.get_file())
 
         return simplejson.dumps({"files": file_display})
 
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
+
 
 # serve static files
-@app.route("/data/<string:filename>", methods=['GET'])
+@app.route("/data/<string:filename>", methods=["GET"])
 def get_file(filename):
-    return send_from_directory(os.path.join(app.config['UPLOAD_DIR']), filename=filename)
+    return send_from_directory(
+        os.path.join(app.config["UPLOAD_DIR"]), filename=filename
+    )
+
 
 # once files are uploaded, requests can be made to /map to generate maps
-@app.route('/map', methods=['GET'])
+@app.route("/map", methods=["GET"])
 def logViz():
     class LogViz(object):
         # Class for analysing logs and generating interactive map
         def __init__(
-                self,
-                logfile,
-                loglist,
-                clean_dir=app.config['CLEAN_DIR'],
-                raw_dir=app.config['UPLOAD_DIR'],
-                asset_dir=app.config['ASSET_DIR'],
-                html_dir=app.config['HTML_DIR']):
+            self,
+            logfile,
+            loglist,
+            clean_dir=app.config["CLEAN_DIR"],
+            raw_dir=app.config["UPLOAD_DIR"],
+            asset_dir=app.config["ASSET_DIR"],
+            html_dir=app.config["HTML_DIR"],
+        ):
             super(LogViz, self).__init__()
 
             # dir with data, rw
@@ -99,7 +121,7 @@ def logViz():
 
             # dir with html, rw
             self.html_dir = html_dir
-            self.html_file = html_dir + 'map.html'
+            self.html_file = html_dir + "map.html"
 
             # "location.js" loaded into the map in /static/index.html
             self.asset_dir = asset_dir
@@ -129,7 +151,7 @@ def logViz():
             # ips in access.log should be in the first part of the line
             checkIp = line.split(" ")[0]
             # ip regex
-            rgx = re.compile('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+            rgx = re.compile("(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})")
             matchIp = rgx.search(checkIp)
 
             if matchIp is None:
@@ -145,7 +167,7 @@ def logViz():
                 return checkIp
             else:
                 # TODO, handle this case instead of just printing the result
-                print('Could not find an IP in this line')
+                print("Could not find an IP in this line")
 
         def removeDuplicates(self):
             # Scans the log file for visits by the same ip and removes them.
@@ -162,7 +184,10 @@ def logViz():
                         # save IP unless its a duplicate found in the last 1000 IPs
                         for line in f:
                             IP = self.getIP(line)
-                            if IP not in addedIPs[max(-len(addedIPs), -1000):] and IP is not None:
+                            if (
+                                IP not in addedIPs[max(-len(addedIPs), -1000) :]
+                                and IP is not None
+                            ):
                                 addedIPs.append(IP)
                                 clean.write(line)
                             else:
@@ -173,25 +198,25 @@ def logViz():
 
         # isolate OS data from a log line
         def getContext(self, line):
-            return (line.rsplit("\"")[5])
+            return line.rsplit('"')[5]
 
         # Gets the OS from a log file entry
         def getOS(self, line):
             context = self.getContext(line).rsplit("(")[1]
             rawOS = context.rsplit(";")[1].lower()
             if "win" in rawOS:
-                return ("Windows")
+                return "Windows"
             elif "android" in rawOS:
-                return ("Android")
+                return "Android"
             elif "mac" in rawOS:
                 if "ipad" or "iphone" in context:
-                    return ("iOS")
+                    return "iOS"
                 else:
-                    return ("Mac")
+                    return "Mac"
             elif "linux" or "ubuntu" in rawOS:
-                return ("Linux")
+                return "Linux"
             else:
-                return ("Other")
+                return "Other"
                 # return rawOS
 
         def getIPData(self):
@@ -301,10 +326,10 @@ def logViz():
                         [
                             [x, y],
                             grid[key],
-                            point['status'],
-                            point['ip'],
-                            point['OS'],
-                            point['fullLine']
+                            point["status"],
+                            point["ip"],
+                            point["OS"],
+                            point["fullLine"],
                         ]
                     )
                 # note size of grid squares
@@ -312,8 +337,9 @@ def logViz():
                 self.information["dy"] = round(latStep / 2, 5)
                 # generate responseJson
                 with open(self.responseJson, "w") as json_dump:
-                    json.dump({"information": self.information,
-                               "raster": raster}, json_dump)
+                    json.dump(
+                        {"information": self.information, "raster": raster}, json_dump
+                    )
 
         def createJs(self, loglist, index, logCount, allLogs):
             # create js used to generate each map
@@ -335,13 +361,13 @@ def logViz():
     # create lists to build on with each log file that is processed
     files, accessLogs, allLogs = [], [], []
     # recursively build list of nginx/ denyhost logs
-    for dirname, dirnames, filenames in os.walk(app.config['UPLOAD_DIR']):
+    for dirname, dirnames, filenames in os.walk(app.config["UPLOAD_DIR"]):
         for subdirname in dirnames:
             files.append(os.path.join(dirname, subdirname))
 
         for filename in filenames:
 
-            if filename.startswith('access'):
+            if filename.startswith("access"):
                 accessLogs.append(filename)
 
     logCount = len(accessLogs) - 1
@@ -349,29 +375,30 @@ def logViz():
         logMap = LogViz(accessLog, accessLogs)
         logMap.analyseLog(accessLogs, index, logCount, allLogs)
 
-        print('maps have been generated')
+        print("maps have been generated")
     # redirect user to the maps generated from logs
-    return send_file('static/map.html')
+    return send_file("static/map.html")
 
 
-@app.route("/delete/<string:filename>", methods=['DELETE'])
+@app.route("/delete/<string:filename>", methods=["DELETE"])
 def delete(filename):
     # remove the log file
-    log_file = os.path.join(app.config['UPLOAD_DIR'], filename)
+    log_file = os.path.join(app.config["UPLOAD_DIR"], filename)
 
     # remove the log file
     if os.path.exists(log_file):
         try:
             os.remove(log_file)
 
-            return simplejson.dumps({filename: 'True'})
+            return simplejson.dumps({filename: "True"})
         except:
-            return simplejson.dumps({filename: 'False'})
+            return simplejson.dumps({filename: "False"})
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
+
 
 @app.route("/map/<ip>", methods=["POST", "GET"])
 def callHost(ip):
@@ -392,10 +419,10 @@ def callHost(ip):
         return response.content
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.debug = True
     if app.debug:
         print("DEBUGGING IS ON")
     else:
         print("DEBUGGING IS OFF")
-    app.run(host='0.0.0.0')
+    app.run(host="0.0.0.0")
