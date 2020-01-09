@@ -40,7 +40,7 @@ def upload():
             mime_type = files.content_type
             validFileType = allowedFileType(mime_type)
             # if file extension is not log or a number (example: access.log.2)
-            # or if file type, 
+            # or if file type,
             if not allowedFileExtension(files.filename) or validFileType == False:
                 print('not a valid log file type')
                 result = uploadfile(name=filename, type=mime_type, size=0,
@@ -120,8 +120,8 @@ def logViz():
 
             # object with IPtotalIPCount number of IPs, also
             # sets the circumference of the data points on the map
-            # based on the total # of ips. When there are many ips to render 
-            # on the Map the data points will have a smaller circumference 
+            # based on the total # of ips. When there are many ips to render
+            # on the Map the data points will have a smaller circumference
             self.information = {"totalIPCount": 0}
 
         def getIP(self, line):
@@ -132,7 +132,7 @@ def logViz():
             matchIp = rgx.search(checkIp)
 
             if matchIp is None:
-                # if that match failed check the entire line for an IP match 
+                # if that match failed check the entire line for an IP match
                 secondMatchIp = rgx.search(line)
                 # if that match also failed, try ipv6
                 if secondMatchIp is None:
@@ -247,7 +247,7 @@ def logViz():
 
         def rasterizeData(self, resLat=200, resLong=250):
 
-            # Split map into resLat*resLong chunks 
+            # Split map into resLat*resLong chunks
             # count visits to each, return "raster"
             # list with geolocation(x,y)/status/ip/os/full log line
 
@@ -371,6 +371,25 @@ def delete(filename):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
+
+@app.route("/map/<ip>", methods=["POST", "GET"])
+def callHost(ip):
+    print("blocking ", ip, " on the host machine..")
+
+    """
+    issue cmd from map_service to block the  IP on the host machine
+    (ufw rules require sudo so you may need to enter your password once in the  servers terminal)
+    """
+    # TODO validate ip
+    data = "sudo ufw deny in from " + ip
+    try:
+        response = requests.post(" http://0.0.0.0:8080", data=data)
+    except Exception as e:
+        return str(e)
+
+    if response.status_code == 200:
+        return response.content
+
 
 if __name__ == '__main__':
     app.debug = True
