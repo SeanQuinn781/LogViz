@@ -7,6 +7,7 @@ class App extends React.Component {
       // start on the first log/map
       logNum: 0,
       // needed to getBoundingRect
+      // TODO: used?
       mapContainer: document.getElementById('root'),
       // tooltip styles
       top: 0,
@@ -62,7 +63,7 @@ class App extends React.Component {
   }
 
   setDimensions() {
-    console.log('set dims')
+    console.log('setting dimensions')
     // dims for graph
     this.boundingRect = this.state.mapContainer.getBoundingClientRect();
     this.height = this.boundingRect.height;
@@ -73,7 +74,7 @@ class App extends React.Component {
   }
 
   createGraph() {
-    console.log('create graph')
+    console.log('creating graph')
     // defining projection
     this.projection = d3.geoNaturalEarth1().scale(1).rotate(90)
       .fitSize([d3.max(this.dim), d3.min(this.dim)], this.worldData)
@@ -148,7 +149,7 @@ class App extends React.Component {
         // create tooltip, could pass in render
         const [xy, visits, status, ip, os, request] = data;
 
-        this.setState({ 
+        this.setState({
           // tooltip styles
           top: offset,
           left: offsetLeft,
@@ -207,12 +208,16 @@ class App extends React.Component {
     window.addEventListener("resize", _.debounce(this.handleResize, 100))
   }
 
+  handleIpClick (currIp) {
+    const { ip } = this.state;
+  }
+
   ToolTip = () => {
     const { visits, status, ip, request, os } = this.state;
-
+    const ipLink = '/map/' + ip;
     return <span
         className="toolTipText"
-        style={{ 
+        style={{
           visibility: visits ? 'visible' : 'hidden'
         }}
       >
@@ -220,6 +225,7 @@ class App extends React.Component {
         Status: {status}{'\n'}
         IP:{'\n'}{ip}{'\n'}
         OS:{'\n'}{os}
+        <a href={ipLink} onClick={this.handleIpClick(ip)}> UFW block IP</a>
         <button>
           <span>See request</span><br />
           {request}
@@ -231,7 +237,7 @@ class App extends React.Component {
     const { top, left } = this.state;
     return (
       <div
-        ref="svgMap" 
+        ref="svgMap"
         id="LogViz"
       >
         {this.MapNavigation()}
