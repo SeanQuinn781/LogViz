@@ -55,7 +55,7 @@ cd app && python3 main.py
 Go to http://127.0.0.1:5000
 
 
-USAGE
+Usage
 ==========================
 
 1. Upload Log Files: Use the testing logs found in the test-logs directory, or Download Nginx access Log Files from your web server and unzip the files.
