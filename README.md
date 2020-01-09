@@ -6,7 +6,7 @@ View the geolocation, status code, operating system and full request of IP addre
 
 - Upload and processes multiple Nginx Log files and generate multiple maps at a time
 
-- Backend: Flask for routing, processing logs, and python geoip2/maxmindDB for geolocation 
+- Backend: Flask for routing, processing logs, and python geoip2/maxmindDB for geolocation
 
 - Frontend: React for UI, d3 for generating svg maps
 
@@ -87,4 +87,3 @@ USAGE
 5. To switch to a different log file / map use the "Log Buttons" on the right side of the Map UI
 
 To optionally deploy as a Gunicorn/ Systemd service See documentation and scripts in /app/gunicorn_config
-
