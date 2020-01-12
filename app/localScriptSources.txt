@@ -1,4 +1,4 @@
-src of scripts for offline testing
+src of scripts currently linked and used locally
 
 <script src="https://d3js.org/topojson.v1.min.js"></script>
 

@@ -6,8 +6,6 @@ class App extends React.Component {
     this.state = {
       // start on the first log/map
       logNum: 0,
-      // needed to getBoundingRect
-      // TODO: used?
       mapContainer: document.getElementById('root'),
       // tooltip styles
       top: 0,
