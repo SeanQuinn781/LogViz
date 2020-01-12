@@ -44,7 +44,6 @@ bootstrap = Bootstrap(app)
 def upload():
     if request.method == "POST":
         files = request.files["file"]
-        print("IN UPLOAD")
         if files:
             filename = secure_filename(files.filename)
             mime_type = files.content_type
@@ -412,14 +411,15 @@ def callHost(ip):
     # TODO validate ip
     data = "sudo ufw deny in from " + ip
     try:
-        response = requests.post(" http://0.0.0.0:8080", data=data)
+        response = requests.post(" http://localhost:8080", data=data)
     except Exception as e:
         return str(e)
 
     if response.status_code == 200:
-        message = 'Successfully executed ' + data
+        message = "Successfully executed " + data
         flash(data)
         return render_template("blockedIp.html", message=message)
+
 
 if __name__ == "__main__":
     app.debug = True
@@ -427,4 +427,4 @@ if __name__ == "__main__":
         print("DEBUGGING IS ON")
     else:
         print("DEBUGGING IS OFF")
-    app.run(host="0.0.0.0")
+    app.run(host="localhost")
