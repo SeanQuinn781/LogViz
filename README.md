@@ -40,7 +40,7 @@ source LogViz/bin/activate
 
 4. Install python requirements in the environment:  
 ```
-pip3 install -r --user requirements.txt
+pip3 install --user -r requirements.txt
 deactivate
 ```
 
@@ -76,7 +76,7 @@ To optionally deploy as a Gunicorn/ Systemd service See documentation and script
 python3 ufwHost.py
 cd app && python3 main.py
 
-3. Go to http://127.0.0.1:3000, upload your log files. Click generate map, hover over the request tooltip and click 'UFW block ip'
+3. Go to http://127.0.0.1:5000, upload your log files. Click generate map, hover over the request tooltip and click 'UFW block ip'
 
 4. You will need to run sudo once in the web server terminal to execute the ufw rule
 
