@@ -9,7 +9,7 @@ def allowedFileExtension(filename):
     # regex for nginx access logs:
     regex = r"\W*(access.log.[1-9]|[1-8][0-9]|9[0-9]|100)\W*"
 
-    if re.search(regex, filename):
+    if re.search(regex, filename) or filename == "access.log":
         return True
     else:
         return False
