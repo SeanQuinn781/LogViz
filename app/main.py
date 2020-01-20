@@ -376,8 +376,7 @@ def logViz():
 
         print("maps have been generated")
     # redirect user to the maps generated from logs
-    # TODO: use templates
-    return send_file("static/map.html")
+    return render_template("map.html")
 
 
 @app.route("/delete/<string:filename>", methods=["DELETE"])
