@@ -169,7 +169,7 @@ class App extends React.Component {
             className="map-nav-btn"
             key={index}
             value={index}
-            onClick={this.handleClick}
+            onMouseDown={this.handleClick}
           >
             {log}
           </button>
@@ -223,7 +223,7 @@ class App extends React.Component {
         Status: {status}{'\n'}
         IP:{'\n'}{ip}{'\n'}
         OS:{'\n'}{os}
-        <a href={ipLink} onClick={this.handleIpClick(ip)}> UFW block IP</a>
+        <a href={ipLink} onMouseDown={this.handleIpClick(ip)}> UFW block IP</a>
         <button>
           <span>See request</span><br />
           {request}
