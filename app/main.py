@@ -12,6 +12,7 @@ from flask import (
     url_for,
     send_from_directory,
 )
+import time
 from celery import Celery
 from flask_bootstrap import Bootstrap
 
@@ -148,6 +149,11 @@ def logViz():
 
             # TODO use celery here for async background processing all logs except the first
             # after redirecting to the first map
+            # used to test the execution time of map creation process while using async processing (as opposed to not using async)
+            start = time.time()
+            # For performance measurement, time.clock() is preferred
+            perfStart = time.perf_counter()
+
             for index, log in enumerate(accessLogs):
                 self.access_file = raw_dir + log
                 # js file that loads the information and raster data from logs into map
@@ -160,6 +166,12 @@ def logViz():
                 self.rasterizeData()
                 print("Rasterised Data")
                 self.createJs(accessLogs, index, allLogs)
+            end = time.time()
+            print("time spent was ")
+            print(end - start)
+
+            print("perf time spent was ")
+            print(end - perfStart)
 
         def getIP(self, line):
             # ips in access.log should be in the first part of the line
