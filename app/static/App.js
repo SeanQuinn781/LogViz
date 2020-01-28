@@ -26,12 +26,12 @@ class App extends React.Component {
     this.addEvents();
   }
 
-  setData () {
-    console.log('setData')
-    const logNum = this.state.logNum;
+  setData (currentLogNum) {
+    let logNum = currentLogNum ? currentLogNum : this.state.logNum;
     this.worldData = topojson.feature(worldData, worldData.objects.countries)
     // loading initial response that loads data
     // and raster from locations.json into page
+    console.log('in setData lognum is', logNum)
     this.raster = LOCATIONS[logNum]["raster"];
     this.rasterInfo = LOCATIONS[logNum]["information"];
     // deriving some constants from the info
@@ -169,7 +169,7 @@ class App extends React.Component {
             className="map-nav-btn"
             key={index}
             value={index}
-            onMouseDown={this.handleClick}
+            onClick={this.handleClick}
           >
             {log}
           </button>
@@ -178,19 +178,21 @@ class App extends React.Component {
     </div>;
   }
   handleClick = (e) => {
-
+    let logNum = e.target.value;
     // now that we have changed log files, build a new map
     this.svg.remove()
-    this.setState({
-      logNum: e.target.value
-    })
-    const previousButtons = document.getElementsByClassName('map-nav-btn');
-    $(previousButtons).removeClass('active');
     e.currentTarget.className = e.currentTarget.className + " active";
-    this.setData()
-    this.setDimensions()
-    this.createGraph()
+    let logClass = e.currentTarget.className;
+    this.setState({
+      logNum: logNum
+    }, (logNum) => {
 
+      const previousButtons = document.getElementsByClassName('map-nav-btn');
+      $(previousButtons).removeClass('active');
+      this.setData(logNum)
+      this.setDimensions()
+      this.createGraph()
+    })
   }
 
   handleResize() {
