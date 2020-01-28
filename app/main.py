@@ -11,10 +11,12 @@ from flask import (
     redirect,
     url_for,
     send_from_directory,
-    send_file,
 )
+from celery import Celery
 from flask_bootstrap import Bootstrap
-from werkzeug import secure_filename
+
+# from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from lib.upload_file import uploadfile
 
 import json
@@ -28,11 +30,18 @@ from getStatusCode import getStatusCode
 from allowedFile import allowedFileExtension, allowedFileType
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "hh_jxcdsfdsfcodf98)fxec]|"
+# app.config["BOOTSTRAP_SERVE_LOCAL"] = True
+# app.config["SECRET_KEY"] = "hh_jxcdsfdsfcodf98)fxec]|"
 app.config["UPLOAD_DIR"] = "static/data/"
 app.config["ASSET_DIR"] = "static/mapAssets/"
 app.config["CLEAN_DIR"] = "static/cleanData/"
 app.config["HTML_DIR"] = "static/"
+app.config["CELERY_BROKER_URL"] = "redis://localhost:6379/0"
+app.config["CELERY_RESULT_BACKEND"] = "redis://localhost:6379/0"
+
+# Initialize Celery
+celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
+celery.conf.update(app.config)
 
 # app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
@@ -103,8 +112,8 @@ def logViz():
         # Class for analysing logs and generating interactive map
         def __init__(
             self,
-            logfile,
             loglist,
+            allLogs,
             clean_dir=app.config["CLEAN_DIR"],
             raw_dir=app.config["UPLOAD_DIR"],
             asset_dir=app.config["ASSET_DIR"],
@@ -125,26 +134,32 @@ def logViz():
             # "location.js" loaded into the map in /static/index.html
             self.asset_dir = asset_dir
 
-            # path to access.log
-            self.access_file = raw_dir + logfile
-
-            # json for each log file with geolocation, os, status code
-            self.analysis = self.clean_dir + logfile + "-" + "analysis.json"
-
-            # contains general information and rasterised location data
-            self.responseJson = self.clean_dir + logfile + "-" + "locations.json"
-
-            # js file that loads the information and raster data from logs into map
-            self.locationsJS = self.asset_dir + "locations.js"
-
             # list of all log files, containing the log name
             self.loglist = self.asset_dir + "loglist.js"
 
+            self.logCount = len(accessLogs) - 1
+
+            self.accessLogs = str(accessLogs)
             # object with IPtotalIPCount number of IPs, also
             # sets the circumference of the data points on the map
             # based on the total # of ips. When there are many ips to render
             # on the Map the data points will have a smaller circumference
             self.information = {"totalIPCount": 0}
+
+            # TODO use celery here for async background processing all logs except the first
+            # after redirecting to the first map
+            for index, log in enumerate(accessLogs):
+                self.access_file = raw_dir + log
+                # js file that loads the information and raster data from logs into map
+                self.locationsJS = self.asset_dir + "locations.js"
+                # json for each log file with geolocation, os, status code
+                self.analysis = self.clean_dir + log + "-" + "analysis.json"
+                # contains general information and rasterised location data
+                self.responseJson = self.clean_dir + log + "-" + "locations.json"
+                self.getIPLocation()
+                self.rasterizeData()
+                print("Rasterised Data")
+                self.createJs(accessLogs, index, allLogs)
 
         def getIP(self, line):
             # ips in access.log should be in the first part of the line
@@ -264,12 +279,6 @@ def logViz():
 
             print("Added locations")
 
-        def analyseLog(self, loglist, index, logCount, allLogs):
-            self.getIPLocation()
-            self.rasterizeData()
-            print("Rasterised Data")
-            self.createJs(loglist, index, logCount, allLogs)
-
         def rasterizeData(self, resLat=200, resLong=250):
 
             # Split map into resLat*resLong chunks
@@ -297,6 +306,7 @@ def logViz():
             # assign each data point to its grid square
             with open(self.analysis, "r") as json_file:
                 data = json.load(json_file)
+                print("here data is! ", data)
                 print("assigning data point to its grid square")
                 for point in data:
                     lat, lon = point["latitude"], point["longitude"]
@@ -340,14 +350,15 @@ def logViz():
                         {"information": self.information, "raster": raster}, json_dump
                     )
 
-        def createJs(self, loglist, index, logCount, allLogs):
+        def createJs(self, accessLog, index, allLogs):
             # create js used to generate each map
             with open(self.responseJson, "r") as response:
-                loglistObj = "const LOGLIST = " + str(loglist)
+                loglistObj = "const LOGLIST = " + self.accessLogs
                 # add location data for each log file to []
                 allLogs.append(json.load(response))
-                # write js data for all log files to []
-                if index == logCount:
+                # write js data for all log files to [] if we're on the last log in the list
+                if index == self.logCount:
+                    print(index)
                     dataString = "const LOCATIONS = " + str(allLogs)
                     with open(self.loglist, "w") as f:
                         f.write(loglistObj)
@@ -369,12 +380,9 @@ def logViz():
             if filename.startswith("access"):
                 accessLogs.append(filename)
 
-    logCount = len(accessLogs) - 1
-    for index, accessLog in enumerate(accessLogs):
-        logMap = LogViz(accessLog, accessLogs)
-        logMap.analyseLog(accessLogs, index, logCount, allLogs)
-
-        print("maps have been generated")
+    allLogs = []
+    LogViz(accessLogs, allLogs)
+    print("maps have been generated")
     # redirect user to the maps generated from logs
     return render_template("map.html")
 
