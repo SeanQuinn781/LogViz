@@ -49,3 +49,15 @@ perf time spent was 15.5+ for all three
 
 4. Threading
 
+executor = concurrent.futures.ThreadPoolExecutor(logCount)
+    futures = [
+        executor.submit(logMap.analyseLog(accessLogs, index, logCount, allLogs))
+        for logMap in logMaps
+    ]
+concurrent.futures.wait(futures)
+
+time spent was 
+15.369227647781372
+perf time spent was 
+1580269817.9104242
+
