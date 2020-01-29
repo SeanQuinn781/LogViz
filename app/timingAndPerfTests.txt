@@ -1,0 +1,56 @@
+Used to test the absolute time and performance time of the map creation process (calling LogViz to process each map). Tested using async, multiprocessing, or threading.
+
+The best solution would be to add celery (redirect flask route to /map after the first map is ready, then process the remaining maps in the background and render them async)
+
+Tested with by generating 14 maps, about 140mb total, resulting in 1332 IPs
+
+1. Using multiprocessing:
+
+start = time.time()
+perfStart = time.perf_counter()
+executor = concurrent.futures.ProcessPoolExecutor(logCount)
+futures = [
+executor.submit(logMap.analyseLog(accessLogs, index, logCount, allLogs))
+    for logMap in logMaps
+]
+concurrent.futures.wait(futures)
+
+time spent was 
+15.69018030166626
+perf time spent was 
+1580269818.231377
+
+2. 
+
+a) Using async with event loop:
+for logMap in logMaps:
+    asyncio.new_event_loop().run_until_complete(
+        logMap.analyseLog(accessLogs, index, logCount, allLogs)
+    )
+14.452940940856934
+perf time spent was 
+1580280407.1440985
+
+b) Using async with event loop 
+
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+try:
+    event_loop.run_until_complete(genMaps(logMaps))
+finally:
+    event_loop.close()
+
+c) async without event loop
+
+async def genMaps(logMaps):
+    for logMap in logMaps:
+        await logMap.analyseLog(accessLogs, index, logCount, allLogs)
+
+asyncio.run(genMaps(logMaps))
+
+time spent was 
+14 - 15 seconds
+perf time spent was 
+1580274212.6248698
+
+4. Threading

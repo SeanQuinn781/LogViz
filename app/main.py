@@ -3,6 +3,8 @@
 # for file upload module
 import os
 import json as simplejson
+import asyncio
+
 from flask import (
     Flask,
     flash,
@@ -12,12 +14,8 @@ from flask import (
     url_for,
     send_from_directory,
 )
-import time
-from celery import Celery
 from flask_bootstrap import Bootstrap
-
-# from werkzeug import secure_filename
-from werkzeug.utils import secure_filename
+from werkzeug import secure_filename
 from lib.upload_file import uploadfile
 
 import json
@@ -30,19 +28,14 @@ from os.path import join, dirname, realpath
 from getStatusCode import getStatusCode
 from allowedFile import allowedFileExtension, allowedFileType
 
+import time
+
 app = Flask(__name__)
-# app.config["BOOTSTRAP_SERVE_LOCAL"] = True
-# app.config["SECRET_KEY"] = "hh_jxcdsfdsfcodf98)fxec]|"
+app.config["SECRET_KEY"] = "hh_jxcdsfdsfcodf98)fxec]|"
 app.config["UPLOAD_DIR"] = "static/data/"
 app.config["ASSET_DIR"] = "static/mapAssets/"
 app.config["CLEAN_DIR"] = "static/cleanData/"
 app.config["HTML_DIR"] = "static/"
-app.config["CELERY_BROKER_URL"] = "redis://localhost:6379/0"
-app.config["CELERY_RESULT_BACKEND"] = "redis://localhost:6379/0"
-
-# Initialize Celery
-celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
-celery.conf.update(app.config)
 
 # app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
@@ -113,8 +106,8 @@ def logViz():
         # Class for analysing logs and generating interactive map
         def __init__(
             self,
+            logfile,
             loglist,
-            allLogs,
             clean_dir=app.config["CLEAN_DIR"],
             raw_dir=app.config["UPLOAD_DIR"],
             asset_dir=app.config["ASSET_DIR"],
@@ -135,43 +128,26 @@ def logViz():
             # "location.js" loaded into the map in /static/index.html
             self.asset_dir = asset_dir
 
+            # path to access.log
+            self.access_file = raw_dir + logfile
+
+            # json for each log file with geolocation, os, status code
+            self.analysis = self.clean_dir + logfile + "-" + "analysis.json"
+
+            # contains general information and rasterised location data
+            self.responseJson = self.clean_dir + logfile + "-" + "locations.json"
+
+            # js file that loads the information and raster data from logs into map
+            self.locationsJS = self.asset_dir + "locations.js"
+
             # list of all log files, containing the log name
             self.loglist = self.asset_dir + "loglist.js"
 
-            self.logCount = len(accessLogs) - 1
-
-            self.accessLogs = str(accessLogs)
             # object with IPtotalIPCount number of IPs, also
             # sets the circumference of the data points on the map
             # based on the total # of ips. When there are many ips to render
             # on the Map the data points will have a smaller circumference
             self.information = {"totalIPCount": 0}
-
-            # TODO use celery here for async background processing all logs except the first
-            # after redirecting to the first map
-            # used to test the execution time of map creation process while using async processing (as opposed to not using async)
-            start = time.time()
-            # For performance measurement, time.clock() is preferred
-            perfStart = time.perf_counter()
-
-            for index, log in enumerate(accessLogs):
-                self.access_file = raw_dir + log
-                # js file that loads the information and raster data from logs into map
-                self.locationsJS = self.asset_dir + "locations.js"
-                # json for each log file with geolocation, os, status code
-                self.analysis = self.clean_dir + log + "-" + "analysis.json"
-                # contains general information and rasterised location data
-                self.responseJson = self.clean_dir + log + "-" + "locations.json"
-                self.getIPLocation()
-                self.rasterizeData()
-                print("Rasterised Data")
-                self.createJs(accessLogs, index, allLogs)
-            end = time.time()
-            print("time spent was ")
-            print(end - start)
-
-            print("perf time spent was ")
-            print(end - perfStart)
 
         def getIP(self, line):
             # ips in access.log should be in the first part of the line
@@ -267,7 +243,7 @@ def logViz():
                     json.dump(result, json_file)
             print("Cleaned Data.")
 
-        def getIPLocation(self):
+        async def getIPLocation(self):
             # Scan ips for geolocation, add coordinates
             self.getIPData()
             with open(self.analysis, "r") as json_file:
@@ -291,7 +267,17 @@ def logViz():
 
             print("Added locations")
 
-        def rasterizeData(self, resLat=200, resLong=250):
+        async def analyseLog(self, loglist, index, logCount, allLogs):
+            tasks = []
+            tasks.append(asyncio.ensure_future(self.getIPLocation()))
+            tasks.append(asyncio.ensure_future(self.rasterizeData()))
+            tasks.append(
+                asyncio.ensure_future(self.createJs(loglist, index, logCount, allLogs))
+            )
+            await asyncio.gather(*tasks, return_exceptions=True)
+            print("Rasterised Data")
+
+        async def rasterizeData(self, resLat=200, resLong=250):
 
             # Split map into resLat*resLong chunks
             # count visits to each, return "raster"
@@ -318,7 +304,6 @@ def logViz():
             # assign each data point to its grid square
             with open(self.analysis, "r") as json_file:
                 data = json.load(json_file)
-                print("here data is! ", data)
                 print("assigning data point to its grid square")
                 for point in data:
                     lat, lon = point["latitude"], point["longitude"]
@@ -362,15 +347,14 @@ def logViz():
                         {"information": self.information, "raster": raster}, json_dump
                     )
 
-        def createJs(self, accessLog, index, allLogs):
+        async def createJs(self, loglist, index, logCount, allLogs):
             # create js used to generate each map
             with open(self.responseJson, "r") as response:
-                loglistObj = "const LOGLIST = " + self.accessLogs
+                loglistObj = "const LOGLIST = " + str(loglist)
                 # add location data for each log file to []
                 allLogs.append(json.load(response))
-                # write js data for all log files to [] if we're on the last log in the list
-                if index == self.logCount:
-                    print(index)
+                # write js data for all log files to []
+                if index == logCount:
                     dataString = "const LOCATIONS = " + str(allLogs)
                     with open(self.loglist, "w") as f:
                         f.write(loglistObj)
@@ -392,12 +376,31 @@ def logViz():
             if filename.startswith("access"):
                 accessLogs.append(filename)
 
-    allLogs = []
-    LogViz(accessLogs, allLogs)
-    print("maps have been generated")
-    # redirect user to the maps generated from logs
-    return render_template("map.html")
+    logCount = len(accessLogs) - 1
+    logMaps = []
+    # used to test the execution time of map creation process while using async processing (as opposed to not using async)
+    start = time.time()
+    # For performance measurement, time.clock() is preferred
+    perfStart = time.clock()
 
+    # set up a list of all the LogViz objects for processing later
+    for index, accessLog in enumerate(accessLogs):
+        logMaps.append(LogViz(accessLog, accessLogs))
+
+    async def genMaps(logMaps):
+        for logMap in logMaps:
+            await logMap.analyseLog(accessLogs, index, logCount, allLogs)
+
+    asyncio.run(genMaps(logMaps))
+
+    end = time.time()
+    print("time spent was ")
+    print(end - start)
+    print("perf time spent was ")
+    print(end - perfStart)
+    print("maps have been generated")
+
+    return render_template("map.html")
 
 @app.route("/delete/<string:filename>", methods=["DELETE"])
 def delete(filename):
