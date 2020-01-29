@@ -1,6 +1,8 @@
-Used to test the absolute time and performance time of the map creation process (calling LogViz to process each map). Tested using async, multiprocessing, or threading.
+Used to test the absolute time and performance time of the map creation process (calling LogViz to process each map). 
+Tested using async, multiprocessing, or threading.
 
-The best solution would be to add celery (redirect flask route to /map after the first map is ready, then process the remaining maps in the background and render them async)
+The best solution would be to add celery (redirect flask route to /map after the first map is ready, 
+then process the remaining maps in the background and render them async)
 
 Tested with by generating 14 maps, about 140mb total, resulting in 1332 IPs
 
