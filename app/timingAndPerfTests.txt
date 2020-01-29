@@ -6,8 +6,6 @@ Tested with by generating 14 maps, about 140mb total, resulting in 1332 IPs
 
 1. Using multiprocessing:
 
-start = time.time()
-perfStart = time.perf_counter()
 executor = concurrent.futures.ProcessPoolExecutor(logCount)
 futures = [
 executor.submit(logMap.analyseLog(accessLogs, index, logCount, allLogs))
@@ -20,16 +18,13 @@ time spent was
 perf time spent was 
 1580269818.231377
 
-2. 
+2. Three different async versions with roughly the same results: 
 
 a) Using async with event loop:
 for logMap in logMaps:
     asyncio.new_event_loop().run_until_complete(
         logMap.analyseLog(accessLogs, index, logCount, allLogs)
     )
-14.452940940856934
-perf time spent was 
-1580280407.1440985
 
 b) Using async with event loop 
 
@@ -40,7 +35,7 @@ try:
 finally:
     event_loop.close()
 
-c) async without event loop
+c) async without event loop (currently in main.py)
 
 async def genMaps(logMaps):
     for logMap in logMaps:
@@ -48,9 +43,9 @@ async def genMaps(logMaps):
 
 asyncio.run(genMaps(logMaps))
 
-time spent was 
-14 - 15 seconds
-perf time spent was 
-1580274212.6248698
+time spent was about 
+14 - 15 seconds for all three
+perf time spent was 15.5+ for all three
 
 4. Threading
+
