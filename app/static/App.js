@@ -225,9 +225,8 @@ class App extends React.Component {
         Status: {status}{'\n'}
         IP:{'\n'}{ip}{'\n'}
         OS:{'\n'}{os}
-        <a href={ipLink} onMouseDown={this.handleIpClick(ip)}> UFW block IP</a>
+        <a href={ipLink} className="ufwIpLink" onMouseDown={this.handleIpClick(ip)}> UFW block IP</a>
         <button>
-          <span>See request</span><br />
           {request}
         </button>
       </span>
