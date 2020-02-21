@@ -12,14 +12,6 @@ class uploadfile:
         self.delete_url = "delete/%s" % name
         self.delete_type = "DELETE"
 
-    def is_image(self):
-        fileName, fileExtension = os.path.splitext(self.name.lower())
-
-        if fileExtension in [".jpg", ".png", ".jpeg", ".bmp"]:
-            return True
-
-        return False
-
     def get_file(self):
 
         print("in get file")
@@ -43,23 +35,11 @@ class uploadfile:
                 "size": self.size,
             }
 
-        # GET image from disk
-        if self.is_image():
-            return {
-                "name": self.name,
-                "size": self.size,
-                "url": self.url,
-                "thumbnailUrl": self.thumbnail_url,
-                "deleteUrl": self.delete_url,
-                "deleteType": self.delete_type,
-            }
 
-        # GET normal file from disk
-        else:
-            return {
-                "name": self.name,
-                "size": self.size,
-                "url": self.url,
-                "deleteUrl": self.delete_url,
-                "deleteType": self.delete_type,
-            }
+        return {
+            "name": self.name,
+            "size": self.size,
+            "url": self.url,
+            "deleteUrl": self.delete_url,
+            "deleteType": self.delete_type,
+        }
