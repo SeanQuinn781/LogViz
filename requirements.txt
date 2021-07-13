@@ -8,7 +8,7 @@ gunicorn==20.0.4
 requests==2.23.0
 itsdangerous==1.1.0
 Jinja2==2.11.1
-urllib3==1.25.8
+urllib3==1.26.5
 MarkupSafe==1.1.1
 maxminddb==1.5.2
 maxminddb-geolite2==2018.703
