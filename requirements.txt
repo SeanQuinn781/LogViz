@@ -1,5 +1,5 @@
 flask==1.1.1
-celery==4.4.0
+celery==5.2.2
 redis==3.4.1
 flask-bootstrap==3.3.7.1
 futures
