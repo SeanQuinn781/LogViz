@@ -12,7 +12,7 @@ urllib3==1.26.5
 MarkupSafe==1.1.1
 maxminddb==1.5.2
 maxminddb-geolite2==2018.703
-Pillow==9.0.1
+Pillow==9.3.0
 python-geoip==1.2
 simplejson==3.17.0
 uWSGI==2.0.18
