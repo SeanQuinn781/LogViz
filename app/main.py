@@ -15,11 +15,14 @@ from flask import (
     send_from_directory,
 )
 from flask_bootstrap import Bootstrap
-from werkzeug import secure_filename
+
+# updated 9-20-23 from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from lib.upload_file import uploadfile
 
 import json
-from geolite2 import geolite2
+# updated 9-20-23 from geolite2 import geolite2
+import geoip2.webservice
 import itertools
 import re
 import requests
@@ -380,8 +383,11 @@ def logViz():
     logMaps = []
     # used to test the execution time of map creation process while using async processing (as opposed to not using async)
     start = time.time()
-    # For performance measurement, time.clock() is preferred
-    perfStart = time.clock()
+    # For performance measurement, time.clock() is preferred 
+
+    # uncommenting because its deprecated apparently:
+    # https://stackoverflow.com/questions/58569361/attributeerror-module-time-has-no-attribute-clock-in-python-3-8
+    # perfStart = time.clock()
 
     # set up a list of all the LogViz objects for processing later
     for index, accessLog in enumerate(accessLogs):
@@ -393,11 +399,10 @@ def logViz():
 
     asyncio.run(genMaps(logMaps))
 
+    # uncommenting because its deprecated apparently:
     end = time.time()
     print("time spent was ")
     print(end - start)
-    print("perf time spent was ")
-    print(end - perfStart)
     print("maps have been generated")
 
     return render_template("map.html")
