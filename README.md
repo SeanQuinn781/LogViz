@@ -70,6 +70,10 @@ Usage
 
 To optionally deploy as a Gunicorn/ Systemd service See documentation and scripts in /app/gunicorn_config
 
+
+
+If you run into errors uploading the files make sure you are in /app before running python3 main.py
+
 ## Blocking IPs from the map service on your host machine
 
 1. Start the app and the python web server ufwHost.py:
@@ -79,4 +83,6 @@ cd app && python3 main.py
 3. Go to http://127.0.0.1:5000, upload your log files. Click generate map, hover over the request tooltip and click 'UFW block ip'
 
 4. You will need to run sudo once in the web server terminal to execute the ufw rule
+
+
 
