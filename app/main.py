@@ -22,7 +22,10 @@ from lib.upload_file import uploadfile
 
 import json
 # updated 9-20-23 from geolite2 import geolite2
-import geoip2.webservice
+# import geoip2.webservice
+# https://pythonhosted.org/python-geoip/
+from ip2geotools.databases.noncommercial import DbIpCity
+from geoip import geolite2
 import itertools
 import re
 import requests
@@ -169,6 +172,9 @@ def logViz():
             # make sure we have an ip
             if matchIp or secondMatchIp or matchIp6:
                 # return the log line now an IP has been detected
+                print('ip is: ', checkIp)
+                loc = DbIpCity.get(ip, api_key='free')
+                print('loc is ', loc)
                 return checkIp
             else:
                 # TODO, handle this case instead of just printing the result
@@ -227,10 +233,12 @@ def logViz():
         def getIPData(self):
             # Removes duplicates and create file w. ip, OS and status code
             self.removeDuplicates()
+            print('in getIpDat')
             with open(self.unique_data_file, "r") as data_file:
                 with open(self.analysis, "w") as json_file:
                     result = []
                     for line in data_file:
+                        print("line is: ", line)
                         try:
                             entry = {}
                             entry["ip"] = self.getIP(line)
@@ -242,21 +250,25 @@ def logViz():
 
                         except Exception as e:
                             pass
+                    print("result is: ", result)
 
                     json.dump(result, json_file)
             print("Cleaned Data.")
 
         async def getIPLocation(self):
             # Scan ips for geolocation, add coordinates
+            print("in getIPLocation ")
             self.getIPData()
+
             with open(self.analysis, "r") as json_file:
                 data = json.load(json_file)
-                reader = geolite2.reader()
+                # reader = geolite2.reader()
                 result = []
                 for item in data:
                     ip = item["ip"]
-                    ip_info = reader.get(ip)
-
+                    # ip_info = reader.get(ip)
+                    ip_info = geolite2.lookup(ip)
+                    print("ip_info is: ", ip_info)
                     if ip_info is not None:
                         try:
                             item["latitude"] = ip_info["location"]["latitude"]
@@ -309,7 +321,10 @@ def logViz():
                 data = json.load(json_file)
                 print("assigning data point to its grid square")
                 for point in data:
-                    lat, lon = point["latitude"], point["longitude"]
+                    print("point is: ", point)
+                    loc = DbIpCity.get(point['ip'], api_key='free')
+                    print('loc here is: ', loc)
+                    lat, lon = loc["latitude"], loc["longitude"]
                     for x in gridX:
                         if lon >= x:
                             coordX = x
