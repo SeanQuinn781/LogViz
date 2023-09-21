@@ -156,6 +156,7 @@ def logViz():
             self.information = {"totalIPCount": 0}
 
         def getIP(self, line):
+            print("in getIp")
             # ips in access.log should be in the first part of the line
             checkIp = line.split(" ")[0]
             # ip regex
@@ -172,15 +173,16 @@ def logViz():
             # make sure we have an ip
             if matchIp or secondMatchIp or matchIp6:
                 # return the log line now an IP has been detected
-                print('ip is: ', checkIp)
-                loc = DbIpCity.get(ip, api_key='free')
+                print('ip is : ', checkIp)
                 print('loc is ', loc)
-                return checkIp
+                print('returning checkIp ', checkIp)
+                # return checkIp
             else:
                 # TODO, handle this case instead of just printing the result
                 print("Could not find an IP in this line")
 
         def removeDuplicates(self):
+            print('in remove duplicates ')
             # Scans the log file for visits by the same ip and removes them.
             with open(self.access_file, "r") as f:
                 # storing all already added IPs
@@ -200,8 +202,11 @@ def logViz():
                                 and IP is not None
                             ):
                                 addedIPs.append(IP)
+                                print('added ips is', addedIPs)
+
                                 clean.write(line)
                             else:
+                                print('passing here')
                                 pass
 
                     dump.write("\n".join(addedIPs))
@@ -231,6 +236,7 @@ def logViz():
                 # return rawOS
 
         def getIPData(self):
+            print('in getIpData')
             # Removes duplicates and create file w. ip, OS and status code
             self.removeDuplicates()
             print('in getIpDat')
@@ -239,14 +245,19 @@ def logViz():
                     result = []
                     for line in data_file:
                         print("line is: ", line)
+                        ip = self.getIP(line)
+                        loc = DbIpCity.get(ip, api_key='free')
                         try:
                             entry = {}
                             entry["ip"] = self.getIP(line)
                             entry["OS"] = self.getOS(line)
                             entry["status"] = getStatusCode(line)
                             entry["fullLine"] = str(line)
+                            entry["latitude"] = loc.latitude
+                            entry["longitude"] = loc.longitude                
                             result.append(entry)
                             self.information["totalIPCount"] += 1
+                            print('full entry: ', entry)
 
                         except Exception as e:
                             pass
@@ -259,23 +270,27 @@ def logViz():
             # Scan ips for geolocation, add coordinates
             print("in getIPLocation ")
             self.getIPData()
-
+            print('finished get ipdata, self.analsysis is ', self.analysis)
             with open(self.analysis, "r") as json_file:
                 data = json.load(json_file)
                 # reader = geolite2.reader()
                 result = []
+                print('data is: ', data)
                 for item in data:
                     ip = item["ip"]
                     # ip_info = reader.get(ip)
-                    ip_info = geolite2.lookup(ip)
-                    print("ip_info is: ", ip_info)
+                    # ip_info = geolite2.lookup(ip)
+                    loc = DbIpCity.get(ip, api_key='free')
+                    print("ip_info is: ", loc)
                     if ip_info is not None:
                         try:
-                            item["latitude"] = ip_info["location"]["latitude"]
-                            item["longitude"] = ip_info["location"]["longitude"]
+                            item["latitude"] = loc.latitude
+                            item["longitude"] = loc.longitude
                             result.append(item)
                         except Exception as e:
                             pass
+                    else:
+                        print('ip_info is none')
 
             with open(self.analysis, "w") as json_file:
                 json.dump(result, json_file)
@@ -296,8 +311,8 @@ def logViz():
 
             # Split map into resLat*resLong chunks
             # count visits to each, return "raster"
-            # list with geolocation(x,y)/status/ip/os/full log line
-
+            # list with geolocation(x,y)/status/ip/os/full log lines
+            print('in rasterizeData ')
             latStep, longStep = 180 / resLat, 360 / resLong
             # Build the rasterised coord. system
             gridX, gridY = [], []
@@ -315,17 +330,27 @@ def logViz():
 
             gridItems = itertools.product(gridX, gridY)
             grid = {i: 0 for i in gridItems}
-
-            # assign each data point to its grid square
+            print("HERE, the grid is made ")
+            # assign each data point to its grid squares
             with open(self.analysis, "r") as json_file:
                 data = json.load(json_file)
                 print("assigning data point to its grid square")
+
+                # for point in data:
+                #    loc = DbIpCity.get(point['ip'], api_key='free')
+                #    print('locLat ', loc.latitude)
+                #    return
+                print('data length '. data.length)
                 for point in data:
                     print("point is: ", point)
                     loc = DbIpCity.get(point['ip'], api_key='free')
                     print('loc here is: ', loc)
-                    lat, lon = loc["latitude"], loc["longitude"]
+                    # lat = loc["longitude"]
+                    # lon = loc["latitude"]
+                    print('lat, lon is ', loc.latitude, loc.longitude)
+                    print('gridX is: ', gridX)
                     for x in gridX:
+                        print('iterating latitutdes ')
                         if lon >= x:
                             coordX = x
                             break
@@ -334,6 +359,7 @@ def logViz():
                             coordY = y
                             break
                     grid[(coordX, coordY)] += 1
+                    print('no grid is: ', grid)
 
                 # remove squares with 0 entries
                 for key in list(grid.keys()):
@@ -367,10 +393,12 @@ def logViz():
 
         async def createJs(self, loglist, index, logCount, allLogs):
             # create js used to generate each map
+            print('in createJs')
             with open(self.responseJson, "r") as response:
                 loglistObj = "const LOGLIST = " + str(loglist)
                 # add location data for each log file to []
                 allLogs.append(json.load(response))
+                print('allLogs is ', allLogs)
                 # write js data for all log files to []
                 if index == logCount:
                     dataString = "const LOCATIONS = " + str(allLogs)
@@ -381,6 +409,8 @@ def logViz():
                         f.write(dataString)
 
                     print("Done!")
+                else:
+                    print('index doesnt equal log count, logcount is: ', logCount, 'index is: ', index)
 
     # create lists to build on with each log file that is processed
     files, accessLogs, allLogs = [], [], []
