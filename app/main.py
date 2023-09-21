@@ -298,13 +298,22 @@ def logViz():
             print("Added locations")
 
         async def analyseLog(self, loglist, index, logCount, allLogs):
+            
+            L = await asyncio.gather(
+                self.getIPLocation(),
+                self.rasterizeData(),
+                self.createJs(loglist, index, logCount, allLogs)
+            )
+            """
             tasks = []
             tasks.append(asyncio.ensure_future(self.getIPLocation()))
             tasks.append(asyncio.ensure_future(self.rasterizeData()))
             tasks.append(
                 asyncio.ensure_future(self.createJs(loglist, index, logCount, allLogs))
             )
-            await asyncio.gather(*tasks, return_exceptions=True)
+            """
+            print('tasks are: ', tasks)
+            # await asyncio.gather(*tasks, return_exceptions=True)
             print("Rasterised Data")
 
         async def rasterizeData(self, resLat=200, resLong=250):
