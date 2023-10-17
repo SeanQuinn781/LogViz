@@ -174,8 +174,13 @@ def logViz():
             if matchIp or secondMatchIp or matchIp6:
                 # return the log line now an IP has been detected
                 print('ip is : ', checkIp)
-                print('loc is ', loc)
+                # print('loc is ', loc)
                 print('returning checkIp ', checkIp)
+                self.ip_file = self.clean_dir + "ip.txt"
+                with open(self.ip_file, "a") as record_ip:
+                        record_ip.write(f'\n{checkIp}')
+
+
                 # return checkIp
             else:
                 # TODO, handle this case instead of just printing the result
@@ -240,12 +245,15 @@ def logViz():
             # Removes duplicates and create file w. ip, OS and status code
             self.removeDuplicates()
             print('in getIpDat')
+            print('unique dat file is', self.unique_data_file)
+            print('analysis is ', self.analysis)
             with open(self.unique_data_file, "r") as data_file:
                 with open(self.analysis, "w") as json_file:
                     result = []
                     for line in data_file:
                         print("line is: ", line)
                         ip = self.getIP(line)
+                        print("does ip exist here: ", ip)
                         loc = DbIpCity.get(ip, api_key='free')
                         try:
                             entry = {}
@@ -349,7 +357,7 @@ def logViz():
                 #    loc = DbIpCity.get(point['ip'], api_key='free')
                 #    print('locLat ', loc.latitude)
                 #    return
-                print('data length '. data.length)
+                print('data is ', data)
                 for point in data:
                     print("point is: ", point)
                     loc = DbIpCity.get(point['ip'], api_key='free')
