@@ -176,9 +176,6 @@ def logViz():
             # make sure we have an ip
             if matchIp or secondMatchIp or matchIp6:
                 # return the log line now an IP has been detected
-                # print('ip is : ', checkIp)
-                # print('loc is ', loc)
-                # print('returning checkIp ', checkIp)
                 if checkIp not in self.all_ips: 
                     self.all_ips.append(checkIp)
                     self.ip_file = self.clean_dir + "ip.txt"
@@ -191,37 +188,6 @@ def logViz():
             else:
                 # TODO, handle this case instead of just printing the result
                 print("Could not find an IP in this line")
-
-        def removeDuplicates(self):
-            print('in remove duplicates ')
-            # Scans the log file for visits by the same ip and removes them.
-            with open(self.access_file, "r") as f:
-                # storing all already added IPs
-                addedIPs = []
-                # creating file that just stores the ips
-                self.ip_file = self.clean_dir + "ip.txt"
-                # file that stores the log lines without duplicate ips
-                self.unique_data_file = self.clean_dir + "noDuplicatesLog.txt"
-                with open(self.ip_file, "w") as dump:
-                    with open(self.unique_data_file, "w") as clean:
-
-                        # save IP unless its a duplicate found in the last 1000 IPs
-                        for line in f:
-                            IP = self.getIP(line)
-                            if (
-                                IP not in addedIPs[max(-len(addedIPs), -1000) :]
-                                and IP is not None
-                            ):
-                                addedIPs.append(IP)
-                                print('added ips is', addedIPs)
-
-                                clean.write(line)
-                            else:
-                                print('passing here')
-                                pass
-
-                    dump.write("\n".join(addedIPs))
-            print("Removed Duplicates.")
 
         # isolate OS data from a log line
         def getContext(self, line):
@@ -252,8 +218,9 @@ def logViz():
             # already avoiding duplicates self.removeDuplicates()
             print('in getIpDat')
             print('unique dat file is', self.unique_data_file)
+            print('self ip file is ', self.ip_file)
             print('analysis is ', self.analysis)
-            with open(self.unique_data_file, "r") as data_file:
+            with open(self.ip_file, "r") as data_file:
                 with open(self.analysis, "w") as json_file:
                     result = []
                     for line in data_file:
@@ -261,6 +228,7 @@ def logViz():
                         ip = self.getIP(line)
                         print("does ip exist here: ", ip)
                         loc = DbIpCity.get(ip, api_key='free')
+                        print('db city ', DbIpCity)
                         try:
                             entry = {}
                             entry["ip"] = self.getIP(line)
