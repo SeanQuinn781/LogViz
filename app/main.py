@@ -137,6 +137,9 @@ def logViz():
             # path to access.log
             self.access_file = raw_dir + logfile
 
+            # arr to avoid duplicate ips
+            self.all_ips = []
+
             # json for each log file with geolocation, os, status code
             self.analysis = self.clean_dir + logfile + "-" + "analysis.json"
 
@@ -156,7 +159,7 @@ def logViz():
             self.information = {"totalIPCount": 0}
 
         def getIP(self, line):
-            print("in getIp")
+            # print("in getIp")
             # ips in access.log should be in the first part of the line
             checkIp = line.split(" ")[0]
             # ip regex
@@ -173,13 +176,16 @@ def logViz():
             # make sure we have an ip
             if matchIp or secondMatchIp or matchIp6:
                 # return the log line now an IP has been detected
-                print('ip is : ', checkIp)
+                # print('ip is : ', checkIp)
                 # print('loc is ', loc)
-                print('returning checkIp ', checkIp)
-                self.ip_file = self.clean_dir + "ip.txt"
-                with open(self.ip_file, "a") as record_ip:
+                # print('returning checkIp ', checkIp)
+                if checkIp not in self.all_ips: 
+                    self.all_ips.append(checkIp)
+                    self.ip_file = self.clean_dir + "ip.txt"
+                    with open(self.ip_file, "a") as record_ip:
                         record_ip.write(f'\n{checkIp}')
-
+                else:
+                    print('already recorded ip: ', checkIp)
 
                 # return checkIp
             else:
@@ -243,7 +249,7 @@ def logViz():
         def getIPData(self):
             print('in getIpData')
             # Removes duplicates and create file w. ip, OS and status code
-            self.removeDuplicates()
+            # already avoiding duplicates self.removeDuplicates()
             print('in getIpDat')
             print('unique dat file is', self.unique_data_file)
             print('analysis is ', self.analysis)
@@ -306,7 +312,7 @@ def logViz():
             print("Added locations")
 
         async def analyseLog(self, loglist, index, logCount, allLogs):
-            
+            """ 
             L = await asyncio.gather(
                 self.getIPLocation(),
                 self.rasterizeData(),
@@ -319,9 +325,8 @@ def logViz():
             tasks.append(
                 asyncio.ensure_future(self.createJs(loglist, index, logCount, allLogs))
             )
-            """
             print('tasks are: ', tasks)
-            # await asyncio.gather(*tasks, return_exceptions=True)
+            await asyncio.gather(*tasks, return_exceptions=True)
             print("Rasterised Data")
 
         async def rasterizeData(self, resLat=200, resLong=250):
