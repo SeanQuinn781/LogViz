@@ -24,6 +24,7 @@ import json
 # updated 9-20-23 from geolite2 import geolite2
 # import geoip2.webservice
 # https://pythonhosted.org/python-geoip/
+# from ip2geotools import DbIpCity
 from ip2geotools.databases.noncommercial import DbIpCity
 from geoip import geolite2
 import itertools
@@ -214,17 +215,13 @@ def logViz():
 
         def getIPData(self):
             print('in getIpData')
-            # Removes duplicates and create file w. ip, OS and status code
-            # already avoiding duplicates self.removeDuplicates()
-            print('in getIpDat')
-            print('unique dat file is', self.unique_data_file)
             print('self ip file is ', self.ip_file)
             print('analysis is ', self.analysis)
             with open(self.ip_file, "r") as data_file:
                 with open(self.analysis, "w") as json_file:
                     result = []
                     for line in data_file:
-                        print("line is: ", line)
+                        print("zz line is: ", line)
                         ip = self.getIP(line)
                         print("does ip exist here: ", ip)
                         loc = DbIpCity.get(ip, api_key='free')
