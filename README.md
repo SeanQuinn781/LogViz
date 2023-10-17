@@ -30,18 +30,17 @@ sudo apt-get install python3-venv
 
 ```
 cd LogViz
-python3 -m venv LogViz
+python3 -m venv venv
 ```
 
 3. Activate virtual environment:
 ```
-source LogViz/bin/activate
+source venv/bin/activate
 ```
 
 4. Install python requirements in the environment:  
 ```
 pip3 install -r requirements.txt --user
-deactivate
 ```
 
 5. Run the app
