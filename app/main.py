@@ -356,7 +356,7 @@ def logViz():
                 print('data is ', data)
                 for point in data:
                     print("point is: ", point)
-                    loc = DbIpCity.get(point['ip'], api_key='free')
+                    # loc = DbIpCity.get(point['ip'], api_key='free')
                     print('loc here is: ', loc)
                     # lat = loc["longitude"]
                     # lon = loc["latitude"]
