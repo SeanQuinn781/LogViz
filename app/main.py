@@ -26,7 +26,7 @@ import json
 # https://pythonhosted.org/python-geoip/
 # from ip2geotools import DbIpCity
 from ip2geotools.databases.noncommercial import DbIpCity
-from geoip import geolite2
+# from geoip import geolite2
 import itertools
 import re
 import requests
@@ -152,6 +152,7 @@ def logViz():
 
             # list of all log files, containing the log name
             self.loglist = self.asset_dir + "loglist.js"
+            self.ip_file = self.clean_dir + "ip.txt"
 
             # object with IPtotalIPCount number of IPs, also
             # sets the circumference of the data points on the map
@@ -167,6 +168,28 @@ def logViz():
             rgx = re.compile("(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})")
             matchIp = rgx.search(checkIp)
 
+
+
+
+        
+            def geolocate(ip_address):
+                try:
+                    url = f"https://geolocation-db.com/jsonp/{ip_address}&position=true"
+                    response = requests.get(url)
+                    # Clean the returned JSONP response to be a valid JSON
+                    json_response = response.text.split("(")[1].strip(")")
+                    data = eval(json_response)
+                    return {
+                        'IP Address': ip_address,
+                        'Country': data.get('country_name', "N/A"),
+                        'State': data.get('state', "N/A"),
+                        'City': data.get('city', "N/A"),
+                        'Latitude': data.get('latitude', "N/A"),
+                        'Longitude': data.get('longitude', "N/A")
+                    }
+                except Exception as e:
+                    return f"Error for IP {ip_address}: {e}"
+
             if matchIp is None:
                 # if that match failed check the entire line for an IP match
                 secondMatchIp = rgx.search(line)
@@ -179,9 +202,16 @@ def logViz():
                 # return the log line now an IP has been detected
                 if checkIp not in self.all_ips: 
                     self.all_ips.append(checkIp)
-                    self.ip_file = self.clean_dir + "ip.txt"
                     with open(self.ip_file, "a") as record_ip:
                         record_ip.write(f'\n{checkIp}')
+
+
+                        result = geolocate(checkIp)
+                        print('result is result ', result)
+                        # for key, value in result.items():
+                            # print(f"{key}: {value}")
+
+
                 else:
                     print('already recorded ip: ', checkIp)
 
@@ -215,17 +245,18 @@ def logViz():
 
         def getIPData(self):
             print('in getIpData')
+
             print('self ip file is ', self.ip_file)
             print('analysis is ', self.analysis)
             with open(self.ip_file, "r") as data_file:
                 with open(self.analysis, "w") as json_file:
                     result = []
                     for line in data_file:
-                        print("zz line is: ", line)
-                        ip = self.getIP(line)
-                        print("does ip exist here: ", ip)
-                        loc = DbIpCity.get(ip, api_key='free')
-                        print('db city ', DbIpCity)
+                        # print("zz line is: ", line)
+                        # ip = self.getIP(line)
+                        # print("does ip exist here: ", ip)
+                        # loc = DbIpCity.get(ip, api_key='free')
+                        # print('db city ', DbIpCity)
                         try:
                             entry = {}
                             entry["ip"] = self.getIP(line)
@@ -277,7 +308,6 @@ def logViz():
             print("Added locations")
 
         async def analyseLog(self, loglist, index, logCount, allLogs):
-            """ 
             L = await asyncio.gather(
                 self.getIPLocation(),
                 self.rasterizeData(),
@@ -290,8 +320,9 @@ def logViz():
             tasks.append(
                 asyncio.ensure_future(self.createJs(loglist, index, logCount, allLogs))
             )
-            print('tasks are: ', tasks)
-            await asyncio.gather(*tasks, return_exceptions=True)
+            """
+            # print('tasks are: ', tasks)
+            # await asyncio.gather(*tasks, return_exceptions=True)
             print("Rasterised Data")
 
         async def rasterizeData(self, resLat=200, resLong=250):
@@ -322,11 +353,6 @@ def logViz():
             with open(self.analysis, "r") as json_file:
                 data = json.load(json_file)
                 print("assigning data point to its grid square")
-
-                # for point in data:
-                #    loc = DbIpCity.get(point['ip'], api_key='free')
-                #    print('locLat ', loc.latitude)
-                #    return
                 print('data is ', data)
                 for point in data:
                     print("point is: ", point)
