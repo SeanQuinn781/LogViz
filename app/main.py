@@ -27,6 +27,7 @@ import json
 # from ip2geotools import DbIpCity
 from ip2geotools.databases.noncommercial import DbIpCity
 # from geoip import geolite2
+from geoip import geolite2
 import itertools
 import re
 import requests
@@ -161,7 +162,6 @@ def logViz():
             self.information = {"totalIPCount": 0}
 
         def getIP(self, line):
-            # print("in getIp")
             # ips in access.log should be in the first part of the line
             checkIp = line.split(" ")[0]
             # ip regex
@@ -215,10 +215,49 @@ def logViz():
                 else:
                     print('already recorded ip: ', checkIp)
 
+                print('ip is : ', checkIp)
+                # print('loc is ', loc)
+                print('returning checkIp ', checkIp)
+                self.ip_file = self.clean_dir + "ip.txt"
+                with open(self.ip_file, "a") as record_ip:
+                        record_ip.write(f'\n{checkIp}')
+
+
                 # return checkIp
             else:
                 # TODO, handle this case instead of just printing the result
                 print("Could not find an IP in this line")
+
+        def removeDuplicates(self):
+            print('in remove duplicates ')
+            # Scans the log file for visits by the same ip and removes them.
+            with open(self.access_file, "r") as f:
+                # storing all already added IPs
+                addedIPs = []
+                # creating file that just stores the ips
+                self.ip_file = self.clean_dir + "ip.txt"
+                # file that stores the log lines without duplicate ips
+                self.unique_data_file = self.clean_dir + "noDuplicatesLog.txt"
+                with open(self.ip_file, "w") as dump:
+                    with open(self.unique_data_file, "w") as clean:
+
+                        # save IP unless its a duplicate found in the last 1000 IPs
+                        for line in f:
+                            IP = self.getIP(line)
+                            if (
+                                IP not in addedIPs[max(-len(addedIPs), -1000) :]
+                                and IP is not None
+                            ):
+                                addedIPs.append(IP)
+                                print('added ips is', addedIPs)
+
+                                clean.write(line)
+                            else:
+                                print('passing here')
+                                pass
+
+                    dump.write("\n".join(addedIPs))
+            print("Removed Duplicates.")
 
         # isolate OS data from a log line
         def getContext(self, line):
@@ -257,6 +296,19 @@ def logViz():
                         # print("does ip exist here: ", ip)
                         # loc = DbIpCity.get(ip, api_key='free')
                         # print('db city ', DbIpCity)
+            # Removes duplicates and create file w. ip, OS and status code
+            self.removeDuplicates()
+            print('in getIpDat')
+            print('unique dat file is', self.unique_data_file)
+            print('analysis is ', self.analysis)
+            with open(self.unique_data_file, "r") as data_file:
+                with open(self.analysis, "w") as json_file:
+                    result = []
+                    for line in data_file:
+                        print("line is: ", line)
+                        ip = self.getIP(line)
+                        print("does ip exist here: ", ip)
+                        loc = DbIpCity.get(ip, api_key='free')
                         try:
                             entry = {}
                             entry["ip"] = self.getIP(line)
@@ -322,6 +374,7 @@ def logViz():
             )
             """
             # print('tasks are: ', tasks)
+            print('tasks are: ', tasks)
             # await asyncio.gather(*tasks, return_exceptions=True)
             print("Rasterised Data")
 
@@ -357,6 +410,15 @@ def logViz():
                 for point in data:
                     print("point is: ", point)
                     # loc = DbIpCity.get(point['ip'], api_key='free')
+
+                # for point in data:
+                #    loc = DbIpCity.get(point['ip'], api_key='free')
+                #    print('locLat ', loc.latitude)
+                #    return
+                print('data is ', data)
+                for point in data:
+                    print("point is: ", point)
+                    loc = DbIpCity.get(point['ip'], api_key='free')
                     print('loc here is: ', loc)
                     # lat = loc["longitude"]
                     # lon = loc["latitude"]
