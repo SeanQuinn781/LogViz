@@ -14,7 +14,7 @@ class uploadfile:
 
     def get_file(self):
 
-        print("in get file")
+        print("in get file upload_file.py")
         # POST an normal file
         if self.not_allowed_msg == "":
             return {
@@ -34,12 +34,3 @@ class uploadfile:
                 "type": self.type,
                 "size": self.size,
             }
-
-
-        return {
-            "name": self.name,
-            "size": self.size,
-            "url": self.url,
-            "deleteUrl": self.delete_url,
-            "deleteType": self.delete_type,
-        }

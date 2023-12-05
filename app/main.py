@@ -27,7 +27,7 @@ import json
 # from ip2geotools import DbIpCity
 from ip2geotools.databases.noncommercial import DbIpCity
 # from geoip import geolite2
-from geoip import geolite2
+# from geoip import geolite2 not found!!
 import itertools
 import re
 import requests
@@ -107,6 +107,26 @@ def get_file(filename):
     )
 
 
+def geolocate(ip_address):
+    try:
+        url = f"https://geolocation-db.com/jsonp/{ip_address}&position=true"
+        response = requests.get(url)
+        # Clean the returned JSONP response to be a valid JSON
+        json_response = response.text.split("(")[1].strip(")")
+        data = eval(json_response)
+        return {
+            'IP Address': ip_address,
+            'Country': data.get('country_name', "N/A"),
+            'State': data.get('state', "N/A"),
+            'City': data.get('city', "N/A"),
+            'Latitude': data.get('latitude', "N/A"),
+            'Longitude': data.get('longitude', "N/A")
+        }
+    except Exception as e:
+        return f"Error for IP {ip_address}: {e}"
+
+
+
 # once files are uploaded, requests can be made to /map to generate maps
 @app.route("/map", methods=["GET"])
 def logViz():
@@ -168,49 +188,24 @@ def logViz():
             rgx = re.compile("(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})")
             matchIp = rgx.search(checkIp)
 
-
-
-
-        
-            def geolocate(ip_address):
-                try:
-                    url = f"https://geolocation-db.com/jsonp/{ip_address}&position=true"
-                    response = requests.get(url)
-                    # Clean the returned JSONP response to be a valid JSON
-                    json_response = response.text.split("(")[1].strip(")")
-                    data = eval(json_response)
-                    return {
-                        'IP Address': ip_address,
-                        'Country': data.get('country_name', "N/A"),
-                        'State': data.get('state', "N/A"),
-                        'City': data.get('city', "N/A"),
-                        'Latitude': data.get('latitude', "N/A"),
-                        'Longitude': data.get('longitude', "N/A")
-                    }
-                except Exception as e:
-                    return f"Error for IP {ip_address}: {e}"
-
             if matchIp is None:
                 # if that match failed check the entire line for an IP match
                 secondMatchIp = rgx.search(line)
                 # if that match also failed, try ipv6
                 if secondMatchIp is None:
                     matchIp6 = ip6Regex.search(line)
-                    # print('ipv6 IP ', line)
-            # make sure we have an ip
-            if matchIp or secondMatchIp or matchIp6:
-                # return the log line now an IP has been detected
-                if checkIp not in self.all_ips: 
-                    self.all_ips.append(checkIp)
-                    with open(self.ip_file, "a") as record_ip:
-                        record_ip.write(f'\n{checkIp}')
 
+                    if not matchIp and not secondMatchIp and not matchIp6:
+                        print('no ip in this line ')
+                  
+                    # return the log line now an IP has been detected
+                    if checkIp not in self.all_ips:
+                        print('adding ip, ', checkIp)
+                        self.all_ips.append(checkIp)
+                        # with open(self.ip_file, "a") as record_ip:
+                         #   record_ip.write(f'\n{checkIp}')
 
-                        result = geolocate(checkIp)
-                        print('result is result ', result)
-                        # for key, value in result.items():
-                            # print(f"{key}: {value}")
-
+                """
 
                 else:
                     print('already recorded ip: ', checkIp)
@@ -227,7 +222,7 @@ def logViz():
             else:
                 # TODO, handle this case instead of just printing the result
                 print("Could not find an IP in this line")
-
+                """
         def removeDuplicates(self):
             print('in remove duplicates ')
             # Scans the log file for visits by the same ip and removes them.
@@ -240,21 +235,17 @@ def logViz():
                 self.unique_data_file = self.clean_dir + "noDuplicatesLog.txt"
                 with open(self.ip_file, "w") as dump:
                     with open(self.unique_data_file, "w") as clean:
-
                         # save IP unless its a duplicate found in the last 1000 IPs
                         for line in f:
                             IP = self.getIP(line)
+                            print('here we get actual ip, from this line ', line)
                             if (
                                 IP not in addedIPs[max(-len(addedIPs), -1000) :]
                                 and IP is not None
                             ):
                                 addedIPs.append(IP)
                                 print('added ips is', addedIPs)
-
                                 clean.write(line)
-                            else:
-                                print('passing here')
-                                pass
 
                     dump.write("\n".join(addedIPs))
             print("Removed Duplicates.")
@@ -284,46 +275,10 @@ def logViz():
 
         def getIPData(self):
             print('in getIpData')
-
-            print('self ip file is ', self.ip_file)
-            print('analysis is ', self.analysis)
-            with open(self.ip_file, "r") as data_file:
-                with open(self.analysis, "w") as json_file:
-                    result = []
-                    for line in data_file:
-                        # print("zz line is: ", line)
-                        # ip = self.getIP(line)
-                        # print("does ip exist here: ", ip)
-                        # loc = DbIpCity.get(ip, api_key='free')
-                        # print('db city ', DbIpCity)
-            # Removes duplicates and create file w. ip, OS and status code
-            self.removeDuplicates()
-            print('in getIpDat')
-            print('unique dat file is', self.unique_data_file)
-            print('analysis is ', self.analysis)
             with open(self.unique_data_file, "r") as data_file:
                 with open(self.analysis, "w") as json_file:
                     result = []
                     for line in data_file:
-                        print("line is: ", line)
-                        ip = self.getIP(line)
-                        print("does ip exist here: ", ip)
-                        loc = DbIpCity.get(ip, api_key='free')
-                        try:
-                            entry = {}
-                            entry["ip"] = self.getIP(line)
-                            entry["OS"] = self.getOS(line)
-                            entry["status"] = getStatusCode(line)
-                            entry["fullLine"] = str(line)
-                            entry["latitude"] = loc.latitude
-                            entry["longitude"] = loc.longitude                
-                            result.append(entry)
-                            self.information["totalIPCount"] += 1
-                            print('full entry: ', entry)
-
-                        except Exception as e:
-                            pass
-                    print("result is: ", result)
 
                     json.dump(result, json_file)
             print("Cleaned Data.")
@@ -331,52 +286,46 @@ def logViz():
         async def getIPLocation(self):
             # Scan ips for geolocation, add coordinates
             print("in getIPLocation ")
-            self.getIPData()
+            # self.getIPData()
             print('finished get ipdata, self.analsysis is ', self.analysis)
-            with open(self.analysis, "r") as json_file:
-                data = json.load(json_file)
-                # reader = geolite2.reader()
-                result = []
-                print('data is: ', data)
-                for item in data:
-                    ip = item["ip"]
-                    # ip_info = reader.get(ip)
-                    # ip_info = geolite2.lookup(ip)
-                    loc = DbIpCity.get(ip, api_key='free')
-                    print("ip_info is: ", loc)
-                    if ip_info is not None:
-                        try:
-                            item["latitude"] = loc.latitude
-                            item["longitude"] = loc.longitude
-                            result.append(item)
-                        except Exception as e:
-                            pass
-                    else:
-                        print('ip_info is none')
 
-            with open(self.analysis, "w") as json_file:
-                json.dump(result, json_file)
 
-            print("Added locations")
 
-        async def analyseLog(self, loglist, index, logCount, allLogs):
-            L = await asyncio.gather(
-                self.getIPLocation(),
-                self.rasterizeData(),
-                self.createJs(loglist, index, logCount, allLogs)
-            )
-            """
-            tasks = []
-            tasks.append(asyncio.ensure_future(self.getIPLocation()))
-            tasks.append(asyncio.ensure_future(self.rasterizeData()))
-            tasks.append(
-                asyncio.ensure_future(self.createJs(loglist, index, logCount, allLogs))
-            )
-            """
-            # print('tasks are: ', tasks)
-            print('tasks are: ', tasks)
-            # await asyncio.gather(*tasks, return_exceptions=True)
-            print("Rasterised Data")
+        async def analyzeLog(self, loglist, index, logCount, allLogs):
+            print("In first function, all params are loglist ", loglist, " index ",  index , "logCount ", logCount, " allLogs ", allLogs)
+
+
+            self.removeDuplicates()
+            print('did we get a unique data file?: ')
+            print(self.unique_data_file)
+            with open(self.unique_data_file, 'r') as check_file_contents:
+                for line in check_file_contents:
+                    print('line ', line)
+
+            with open(self.ip_file, 'r' ) as check_file_two_contents:
+                for line in check_file_two_contents:
+                    print('line ', line)
+
+            # print('did we get an ip file created? ')
+            # for line in self.ip_file:
+            #     print('ip line: ', line)
+            return
+            bigLog = ''
+            ip_address = ''
+
+            for log in loglist:
+                with open(log, "r") as current_log_file:
+                    for line in current_log_file:
+                        ip_address = self.getIP(line)
+                        print('got IP: ', ip_address)
+                        
+
+                        if ip_address is not None:
+                            loc = DbIpCity.get(ip, api_key='free')
+                            if loc is not None:
+                                print('loc: ', loc)
+
+        
 
         async def rasterizeData(self, resLat=200, resLong=250):
 
@@ -420,51 +369,58 @@ def logViz():
                     print("point is: ", point)
                     loc = DbIpCity.get(point['ip'], api_key='free')
                     print('loc here is: ', loc)
+                    if loc is None:
+                        print('nothin')
+                        return
+                    else:
+                        print('got it, loc is : ', loc)
                     # lat = loc["longitude"]
                     # lon = loc["latitude"]
-                    print('lat, lon is ', loc.latitude, loc.longitude)
-                    print('gridX is: ', gridX)
-                    for x in gridX:
-                        print('iterating latitutdes ')
-                        if lon >= x:
-                            coordX = x
-                            break
-                    for y in gridY:
-                        if lat >= y:
-                            coordY = y
-                            break
-                    grid[(coordX, coordY)] += 1
-                    print('no grid is: ', grid)
 
-                # remove squares with 0 entries
-                for key in list(grid.keys()):
-                    if grid[key] == 0:
-                        del grid[key]
+                    
+                        print('lat, lon is ', loc.latitude, loc.longitude)
+                        print('gridX is: ', gridX)
+                        for x in gridX:
+                            print('iterating latitutdes ')
+                            if loc.latitude >= x:
+                                coordX = x
+                                break
+                        for y in gridY:
+                            if loc.longitude >= y:
+                                coordY = y
+                                break
+                        grid[(coordX, coordY)] += 1
+                        print('no grid is: ', grid)
 
-                # center squares
-                raster = []
-                # creating raster and information object
-                for key, point in zip(grid, data):
-                    x = round(key[0] + longStep / 2, 5)
-                    y = round(key[1] + latStep / 2, 5)
-                    raster.append(
-                        [
-                            [x, y],
-                            grid[key],
-                            point["status"],
-                            point["ip"],
-                            point["OS"],
-                            point["fullLine"],
-                        ]
-                    )
-                # note size of grid squares
-                self.information["dx"] = round(longStep / 2, 5)
-                self.information["dy"] = round(latStep / 2, 5)
-                # generate responseJson
-                with open(self.responseJson, "w") as json_dump:
-                    json.dump(
-                        {"information": self.information, "raster": raster}, json_dump
-                    )
+                    # remove squares with 0 entries
+                    for key in list(grid.keys()):
+                        if grid[key] == 0:
+                            del grid[key]
+
+                    # center squares
+                    raster = []
+                    # creating raster and information object
+                    for key, point in zip(grid, data):
+                        x = round(key[0] + longStep / 2, 5)
+                        y = round(key[1] + latStep / 2, 5)
+                        raster.append(
+                            [
+                                [x, y],
+                                grid[key],
+                                point["status"],
+                                point["ip"],
+                                point["OS"],
+                                point["fullLine"],
+                            ]
+                        )
+                    # note size of grid squares
+                    self.information["dx"] = round(longStep / 2, 5)
+                    self.information["dy"] = round(latStep / 2, 5)
+                    # generate responseJson
+                    with open(self.responseJson, "w") as json_dump:
+                        json.dump(
+                            {"information": self.information, "raster": raster}, json_dump
+                        )
 
         async def createJs(self, loglist, index, logCount, allLogs):
             # create js used to generate each map
@@ -515,7 +471,8 @@ def logViz():
 
     async def genMaps(logMaps):
         for logMap in logMaps:
-            await logMap.analyseLog(accessLogs, index, logCount, allLogs)
+            print('calling analyze log with each log ')
+            await logMap.analyzeLog(accessLogs, index, logCount, allLogs)
 
     asyncio.run(genMaps(logMaps))
 
@@ -579,26 +536,6 @@ def deleteFile(filename):
 def index():
     return render_template("index.html")
 
-
-@app.route("/map/<ip>", methods=["POST", "GET"])
-def callHost(ip):
-    print("blocking ", ip, " on the host machine..")
-
-    """
-    issue cmd from map_service to block the  IP on the host machine
-    (ufw rules require sudo so you may need to enter your password once in the  servers terminal)
-    """
-    # TODO validate ip
-    data = "sudo ufw deny in from " + ip
-    try:
-        response = requests.post(" http://localhost:8080", data=data)
-    except Exception as e:
-        return str(e)
-
-    if response.status_code == 200:
-        message = "Successfully executed " + data
-        flash(data)
-        return render_template("blockedIp.html", message=message)
 
 
 if __name__ == "__main__":

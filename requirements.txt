@@ -8,7 +8,6 @@ flask-bootstrap
 gunicorn==20.0.4
 requests==2.23.0
 itsdangerous==1.1.0
-urllib3
 simplejson==3.17.0
 virtualenv==20.0.4
-
+flask
